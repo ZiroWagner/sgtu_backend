@@ -35,8 +35,7 @@ const processAndUploadImage = async (imageBuffer) => {
 };
 
 const register = async (req, res) => {
-  const { nombre, apellido, correo, password, rol, dni, fecha_nacimiento } = req.body;
-  console.log('password recibida:', req.body);  // Verifica el valor recibido
+  const { nombre, apellido, correo, password, rol, telefono, dni, fecha_nacimiento } = req.body;
   const imageBuffer = req.file ? req.file.buffer : null;
 
   try {
@@ -56,6 +55,7 @@ const register = async (req, res) => {
         password: hashedPassword,
         rol,
         img_ruta,
+        telefono,
         dni,
         fecha_nacimiento
       })
@@ -83,13 +83,17 @@ const login = async (req, res) => {
       .single();
 
     if (error || !data) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(401).json({ message: 'Invalid credentials [correo]' });
+    }
+
+    if (!data.estado) {
+      return res.status(401).json({ message: 'User account is deactivated' });
     }
 
     const isPasswordValid = await bcrypt.compare(password, data.password);
 
     if (!isPasswordValid) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(401).json({ message: 'Invalid credentials [password]' });
     }
 
     const token = generateToken(data.id, data.rol);
@@ -137,7 +141,7 @@ const getUserById = async (req, res) => {
 
 const updateUser = async (req, res) => {
   const { id } = req.params;
-  const { nombre, apellido, correo, rol, estado, telefono } = req.body;
+  const { nombre, apellido, correo, rol, estado, telefono, dni, fecha_nacimiento } = req.body;
   const imageBuffer = req.file ? req.file.buffer : null;
 
   try {
@@ -148,7 +152,7 @@ const updateUser = async (req, res) => {
 
     const { data, error } = await supabase
       .from('usuarios')
-      .update({ nombre, apellido, correo, rol, img_ruta, estado, telefono })
+      .update({ nombre, apellido, correo, rol, img_ruta, estado, telefono, dni, fecha_nacimiento })
       .eq('id', id)
       .select();
 
@@ -166,12 +170,11 @@ const updateUser = async (req, res) => {
 
 const deleteUser = async (req, res) => {
   const { id } = req.params;
-  const { estado } = req.body;
 
   try {
     const { data, error } = await supabase
       .from('usuarios')
-      .update({ estado })
+      .update({ estado: false })
       .eq('id', id)
       .select();
 
@@ -181,7 +184,7 @@ const deleteUser = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    res.json({ message: 'User deleted successfully' });
+    res.json({ message: 'User deactivated successfully' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

@@ -4,6 +4,7 @@ const multer = require('multer');
 require('dotenv').config();
 
 const usuarioRoutes = require('./routes/usuarioRoutes');
+const estudianteRoutes = require('./routes/estudianteRoutes');
 
 const app = express();
 const path = require('path');
@@ -28,6 +29,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/usuarios', usuarioRoutes);
+app.use('/api/estudiantes', estudianteRoutes);
 
 const PORT = process.env.PORT || 3000;
 
