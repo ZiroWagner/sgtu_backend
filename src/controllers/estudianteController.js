@@ -1,4 +1,4 @@
-const supabase = require('../config/database');
+const { supabase } = require('../config/database');
 
 const createEstudiante = async (req, res) => {
   const { id_usuario, codigo_universitario, ciclo_academico, plan_academico, facultad, nivel_ingles, horas_practicante, estado_financiero } = req.body;
